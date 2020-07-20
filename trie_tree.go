@@ -138,6 +138,55 @@ func (tree *Trie) Filter(text string) string {
 	return string(resultRunes)
 }
 
+//HighLight 高亮敏感词
+func (tree *Trie) HighLight(text string) string {
+	var (
+		parent  = tree.Root
+		current *Node
+		runes   = []rune(text)
+		length  = len(runes)
+		left    = 0
+		found   bool
+		sensitiveRunes []rune
+		runesRight []rune
+		highLightLeft = []rune(`<span style=\"color: rgb(230, 0, 0);\">来测试</span></h2><h5><span style=\"background-color: rgb(247, 218, 100);\">`)
+		hightLightRight=[]rune("</span>")
+	)
+
+	for position := 0; position < len(runes); position++ {
+		current, found = parent.Children[runes[position]]
+
+		if !found || (!current.IsPathEnd() && position == length-1) {
+			parent = tree.Root
+			position = left
+			left++
+			continue
+		}
+
+		// println(string(current.Character), current.IsPathEnd(), left)
+		if current.IsPathEnd() && left <= position {
+			//for i := left; i <= position; i++ {
+			//	runes[i] = character
+			//}
+			if position+1<len(runes){
+				sensitiveRunes=runes[left:position+1]
+				runesRight=runes[position+1:]
+			}else {
+				sensitiveRunes=runes[left:]
+				runesRight=make([]rune,0)
+			}
+			runesTemp:=append(runes[:left],highLightLeft...)
+			runesTemp=append(runesTemp,sensitiveRunes...)
+			runesTemp=append(runesTemp,hightLightRight...)
+			runes=append(runesTemp,runesRight...)
+		}
+
+		parent = current
+	}
+
+	return string(runes)
+}
+
 // Validate 验证字符串是否合法，如不合法则返回false和检测到
 // 的第一个敏感词
 func (tree *Trie) Validate(text string) (bool, string) {
