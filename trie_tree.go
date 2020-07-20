@@ -141,19 +141,25 @@ func (tree *Trie) Filter(text string) string {
 //HighLight 高亮敏感词
 func (tree *Trie) HighLight(text string) string {
 	var (
-		parent  = tree.Root
-		current *Node
-		runes   = []rune(text)
-		length  = len(runes)
-		left    = 0
-		found   bool
-		sensitiveRunes []rune
-		runesRight []rune
-		highLightLeft = []rune(`<span style=\"color: rgb(230, 0, 0);\">来测试</span></h2><h5><span style=\"background-color: rgb(247, 218, 100);\">`)
-		hightLightRight=[]rune("</span>")
+		parent    = tree.Root
+		current   *Node
+		runes     = []rune(text)
+		length    = len(runes)
+		left      = 0
+		found     bool
+		runesPart = make([][]rune, 0)
+		//sensitiveRunes []rune
+		leftPositions = make([]int, 0) //用于记录所有敏感词的左侧位置
+		leftIndex     = 0
+		rightPostions = make([]int, 0) //用于记录所有敏感词的右侧位置
+		rightIndex    = 0
+		//runesRight []rune
+		//highLightLeft = []rune(`<span style=\"color: rgb(230, 0, 0);\">`)
+		//hightLightRight=[]rune("</span>")
 	)
 
 	for position := 0; position < len(runes); position++ {
+		println("当前检查：" + string(runes[position]))
 		current, found = parent.Children[runes[position]]
 
 		if !found || (!current.IsPathEnd() && position == length-1) {
@@ -168,21 +174,50 @@ func (tree *Trie) HighLight(text string) string {
 			//for i := left; i <= position; i++ {
 			//	runes[i] = character
 			//}
-			if position+1<len(runes){
-				sensitiveRunes=runes[left:position+1]
-				runesRight=runes[position+1:]
-			}else {
-				sensitiveRunes=runes[left:]
-				runesRight=make([]rune,0)
-			}
-			runesTemp:=append(runes[:left],highLightLeft...)
-			runesTemp=append(runesTemp,sensitiveRunes...)
-			runesTemp=append(runesTemp,hightLightRight...)
-			runes=append(runesTemp,runesRight...)
+			//if position+1<len(runes){
+			//	sensitiveRunes=runes[left:position+1]
+			//	println(string(sensitiveRunes))
+			//	//runesRight=runes[position+1:]
+			//}else {
+			//	sensitiveRunes=runes[left:]
+			//	//runesRight=make([]rune,0)
+			//}
+			//runesTemp:=append(runes[:left],highLightLeft...)
+			//runesTemp=append(runesTemp,sensitiveRunes...)
+			//runesTemp=append(runesTemp,hightLightRight...)
+			//runes=append(runesTemp,runesRight...)
+
+			leftPositions = append(leftPositions, left)
+			rightPostions = append(rightPostions, position)
+			left = position + 1
 		}
 
 		parent = current
 	}
+	//在敏感词左右侧添加html标签<span style=\"color: rgb(230, 0, 0);\"> xxx </span>
+	//方案1： 按照敏感词位置，将runes数组拆分成段，并重新进行组合,貌似有点麻烦
+	//你好傻逼呀，真的号傻逼要大姐夫也傻逼呀  2 9 13 16       3 10 14 17
+	//runes[:2] runes[2:4] runes[4:9] runes[9:11] runes[11:13] runes[13:15] runes[15:16] runes[16:18] runes{18:]
+	//for i := 0; i < len(leftPositions)*2; i++ {
+	//	if i == 0 {
+	//		runesPart[i] = runes[:leftPositions[leftIndex]]
+	//	} else if i == len(leftPositions)*2-1 {
+	//		if rightPostions[i] == len(text) {
+	//			runesPart[i] = make([]rune, 0)
+	//		}
+	//		runesPart[i] = runes[rightPostions[rightIndex]:]
+	//	} else {
+	//		if i%2 == 0 {
+	//			runesPart[i] = runes[rightPostions[rightIndex]+1 : leftPositions[leftIndex]]
+	//			rightIndex++
+	//		} else {
+	//			runesPart[i] = runes[leftPositions[leftIndex] : rightPostions[rightIndex]+1]
+	//			leftIndex++
+	//		}
+	//	}
+	//
+	//}
+	//方案2：按照反向顺序添加标签，避免影响之前记录的顺序
 
 	return string(runes)
 }

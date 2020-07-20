@@ -90,6 +90,11 @@ func (filter *Filter) Replace(text string, repl rune) string {
 	return filter.trie.Replace(text, repl)
 }
 
+//Highlight 高亮敏感词
+func (filter *Filter) Hightlight(text string) string {
+	return filter.trie.HighLight(text)
+}
+
 // FindIn 检测敏感词
 func (filter *Filter) FindIn(text string) (bool, string) {
 	text = filter.RemoveNoise(text)
