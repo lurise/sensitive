@@ -141,25 +141,29 @@ func (tree *Trie) Filter(text string) string {
 //HighLight 高亮敏感词
 func (tree *Trie) HighLight(text string) string {
 	var (
-		parent    = tree.Root
-		current   *Node
-		runes     = []rune(text)
-		length    = len(runes)
-		left      = 0
-		found     bool
-		runesPart = make([][]rune, 0)
+		parent  = tree.Root
+		current *Node
+		runes   = []rune(text)
+		length  = len(runes)
+		left    = 0
+		found   bool
+
+		runesRightTemp []rune
+		runesLeftTemp  []rune
+		runesSensitive []rune
+		//runesTemp      []rune
+		//runesPart = make([][]rune, 0)
 		//sensitiveRunes []rune
 		leftPositions = make([]int, 0) //用于记录所有敏感词的左侧位置
-		leftIndex     = 0
+		//leftIndex     = 0
 		rightPostions = make([]int, 0) //用于记录所有敏感词的右侧位置
-		rightIndex    = 0
+		//rightIndex    = 0
 		//runesRight []rune
-		//highLightLeft = []rune(`<span style=\"color: rgb(230, 0, 0);\">`)
-		//hightLightRight=[]rune("</span>")
+		highLightLeft   = []rune(`<span style=\"color: rgb(230, 0, 0);\">`)
+		hightLightRight = []rune("</span>")
 	)
 
 	for position := 0; position < len(runes); position++ {
-		println("当前检查：" + string(runes[position]))
 		current, found = parent.Children[runes[position]]
 
 		if !found || (!current.IsPathEnd() && position == length-1) {
@@ -169,23 +173,7 @@ func (tree *Trie) HighLight(text string) string {
 			continue
 		}
 
-		// println(string(current.Character), current.IsPathEnd(), left)
 		if current.IsPathEnd() && left <= position {
-			//for i := left; i <= position; i++ {
-			//	runes[i] = character
-			//}
-			//if position+1<len(runes){
-			//	sensitiveRunes=runes[left:position+1]
-			//	println(string(sensitiveRunes))
-			//	//runesRight=runes[position+1:]
-			//}else {
-			//	sensitiveRunes=runes[left:]
-			//	//runesRight=make([]rune,0)
-			//}
-			//runesTemp:=append(runes[:left],highLightLeft...)
-			//runesTemp=append(runesTemp,sensitiveRunes...)
-			//runesTemp=append(runesTemp,hightLightRight...)
-			//runes=append(runesTemp,runesRight...)
 
 			leftPositions = append(leftPositions, left)
 			rightPostions = append(rightPostions, position)
@@ -218,7 +206,35 @@ func (tree *Trie) HighLight(text string) string {
 	//
 	//}
 	//方案2：按照反向顺序添加标签，避免影响之前记录的顺序
+	for i := len(leftPositions) - 1; i >= 0; i-- {
+		if rightPostions[i] == length-1 {
+			runesRightTemp = make([]rune, 0)
+		} else {
+			temp := runes[rightPostions[i]+1:]
+			runesRightTemp = make([]rune, len(temp))
+			copy(runesRightTemp, runes[rightPostions[i]+1:])
 
+		}
+		//println("右侧为：" + string(runesRightTemp))
+		runesSensitive = runes[leftPositions[i] : rightPostions[i]+1]
+		//println("高亮前的敏感词为:" + string(runesSensitive))
+		if leftPositions[i] == 0 {
+			runesLeftTemp = make([]rune, 0)
+		} else {
+			temp := runes[:leftPositions[i]]
+			runesLeftTemp = make([]rune, len(temp))
+			copy(runesLeftTemp, temp)
+		}
+		//println("左侧为：" + string(runesLeftTemp))
+		runesSensitive = append(append(highLightLeft, runesSensitive...), hightLightRight...)
+		//println("高亮后的敏感词为:" + string(runesSensitive))
+		runesLeftTemp = append(runesLeftTemp, runesSensitive...)
+		//println("此时的左侧为：" + string(runesLeftTemp))
+		//println("此时的右侧为：" + string(runesRightTemp))
+		//备注：切片后，更改会影响原数组的值
+		runes = append(runesLeftTemp, runesRightTemp...)
+		//println("此时的语句为：" + string(runes))
+	}
 	return string(runes)
 }
 
