@@ -159,7 +159,7 @@ func (tree *Trie) HighLight(text string) string {
 		rightPostions = make([]int, 0) //用于记录所有敏感词的右侧位置
 		//rightIndex    = 0
 		//runesRight []rune
-		highLightLeft   = []rune(`<span style=\"color: rgb(230, 0, 0);\">`)
+		highLightLeft   = []rune(`<span style="background-color: rgb(247, 218, 100);">`)
 		hightLightRight = []rune("</span>")
 	)
 
