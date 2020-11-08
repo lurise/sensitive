@@ -161,6 +161,7 @@ func (tree *Trie) HighLight(text string) string {
 		//runesRight []rune
 		highLightLeft   = []rune(`<span class="sensitive_word" style="background-color: rgb(247, 218, 100);">`)
 		hightLightRight = []rune("</span>")
+		isTag           = true
 	)
 
 	for position := 0; position < len(runes); position++ {
@@ -213,8 +214,22 @@ func (tree *Trie) HighLight(text string) string {
 			temp := runes[rightPostions[i]+1:]
 			runesRightTemp = make([]rune, len(temp))
 			copy(runesRightTemp, runes[rightPostions[i]+1:])
-
 		}
+
+		//判断是否已添加了标记
+		if leftPositions[i] > 76 {
+			runesHighLight := runes[leftPositions[i]-76 : leftPositions[i]]
+			for i := 0; i < len(runesHighLight)-1; i++ {
+				if runesHighLight[i+1] != highLightLeft[i] {
+					isTag = false
+					break
+				}
+			}
+			if isTag {
+				continue
+			}
+		}
+
 		//println("右侧为：" + string(runesRightTemp))
 		runesSensitive = runes[leftPositions[i] : rightPostions[i]+1]
 		//println("高亮前的敏感词为:" + string(runesSensitive))
