@@ -161,7 +161,7 @@ func (tree *Trie) HighLight(text string) string {
 		//runesRight []rune
 		highLightLeft   = []rune(`<span class="sensitive_word" style="background-color: rgb(247, 218, 100);">`)
 		hightLightRight = []rune("</span>")
-		isTag           = true
+		isNeedToTag     = true
 	)
 
 	for position := 0; position < len(runes); position++ {
@@ -208,26 +208,28 @@ func (tree *Trie) HighLight(text string) string {
 	//}
 	//方案2：按照反向顺序添加标签，避免影响之前记录的顺序
 	for i := len(leftPositions) - 1; i >= 0; i-- {
+		isNeedToTag = false
+		//判断是否已添加了标记
+		if leftPositions[i] > 76 {
+			runesHighLight := runes[leftPositions[i]-76 : leftPositions[i]]
+			for i := 0; i < len(runesHighLight)-1; i++ {
+				if runesHighLight[i+1] != highLightLeft[i] {
+					isNeedToTag = true
+					break
+				}
+			}
+			if !isNeedToTag {
+				isNeedToTag = false
+				continue
+			}
+		}
+
 		if rightPostions[i] == length-1 {
 			runesRightTemp = make([]rune, 0)
 		} else {
 			temp := runes[rightPostions[i]+1:]
 			runesRightTemp = make([]rune, len(temp))
 			copy(runesRightTemp, runes[rightPostions[i]+1:])
-		}
-
-		//判断是否已添加了标记
-		if leftPositions[i] > 76 {
-			runesHighLight := runes[leftPositions[i]-76 : leftPositions[i]]
-			for i := 0; i < len(runesHighLight)-1; i++ {
-				if runesHighLight[i+1] != highLightLeft[i] {
-					isTag = false
-					break
-				}
-			}
-			if isTag {
-				continue
-			}
 		}
 
 		//println("右侧为：" + string(runesRightTemp))

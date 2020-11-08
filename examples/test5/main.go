@@ -15,6 +15,7 @@ func main() {
 	}
 
 	text = filter.Hightlight(text)
+	text = text + "傻逼"
 	text = filter.Hightlight(text)
 
 	println("text=" + text)
